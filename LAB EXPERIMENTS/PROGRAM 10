@@ -1,0 +1,191 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+// Definition of Node structure
+struct Node {
+    int data;
+    struct Node* next;
+};
+
+// Function prototypes
+void display(struct Node* head);
+void insertAtBeginning(struct Node** head_ref, int new_data);
+void insertAtEnd(struct Node** head_ref, int new_data);
+void deleteByValue(struct Node** head_ref, int key);
+void search(struct Node* head, int key);
+
+int main() {
+    struct Node* head = NULL; // Initialize empty list
+    int choice, value;
+
+    while (1) {
+        printf("\n--- LINKED LIST OPERATIONS ---\n");
+        printf("1. Insert at Beginning\n");
+        printf("2. Insert at End\n");
+        printf("3. Delete by Value\n");
+        printf("4. Search Element\n");
+        printf("5. Display List\n");
+        printf("6. Exit\n");
+        printf("Enter your choice (1-6): ");
+        scanf("%d", &choice);
+
+        switch (choice) {
+            case 1:
+                printf("Enter value to insert at beginning: ");
+                scanf("%d", &value);
+                insertAtBeginning(&head, value);
+                printf("Node inserted at beginning.\n");
+                break;
+
+            case 2:
+                printf("Enter value to insert at end: ");
+                scanf("%d", &value);
+                insertAtEnd(&head, value);
+                printf("Node inserted at end.\n");
+                break;
+
+            case 3:
+                if (head == NULL) {
+                    printf("List is empty! Nothing to delete.\n");
+                    break;
+                }
+                printf("Enter value to delete: ");
+                scanf("%d", &value);
+                deleteByValue(&head, value);
+                break;
+
+            case 4:
+                if (head == NULL) {
+                    printf("List is empty!\n");
+                    break;
+                }
+                printf("Enter value to search: ");
+                scanf("%d", &value);
+                search(head, value);
+                break;
+
+            case 5:
+                display(head);
+                break;
+
+            case 6:
+                // Free memory before exiting
+                {
+                    struct Node* temp;
+                    while (head != NULL) {
+                        temp = head;
+                        head = head->next;
+                        free(temp);
+                    }
+                }
+                printf("Exiting program.\n");
+                return 0;
+
+            default:
+                printf("Invalid choice! Please select 1 through 6.\n");
+        }
+    }
+
+    return 0;
+}
+
+// Function to print all elements in the linked list
+void display(struct Node* head) {
+    if (head == NULL) {
+        printf("List is empty.\n");
+        return;
+    }
+
+    struct Node* temp = head;
+    printf("Linked List: ");
+    while (temp != NULL) {
+        printf("%d -> ", temp->data);
+        temp = temp->next;
+    }
+    printf("NULL\n");
+}
+
+// Function to insert a node at the start (O(1) time complexity)
+void insertAtBeginning(struct Node** head_ref, int new_data) {
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    if (new_node == NULL) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+    new_node->data = new_data;
+    new_node->next = *head_ref;
+    *head_ref = new_node;
+}
+
+// Function to insert a node at the end (O(n) time complexity)
+void insertAtEnd(struct Node** head_ref, int new_data) {
+    struct Node* new_node = (struct Node*)malloc(sizeof(struct Node));
+    if (new_node == NULL) {
+        printf("Memory allocation failed!\n");
+        return;
+    }
+    new_node->data = new_data;
+    new_node->next = NULL;
+
+    // If list is empty, make new node the head
+    if (*head_ref == NULL) {
+        *head_ref = new_node;
+        return;
+    }
+
+    // Traverse to the last node
+    struct Node* last = *head_ref;
+    while (last->next != NULL) {
+        last = last->next;
+    }
+
+    last->next = new_node;
+}
+
+// Function to delete the first occurrence of a key
+void deleteByValue(struct Node** head_ref, int key) {
+    struct Node* temp = *head_ref;
+    struct Node* prev = NULL;
+
+    // Case 1: Head node holds the key to be deleted
+    if (temp != NULL && temp->data == key) {
+        *head_ref = temp->next; // Change head
+        free(temp);             // Free old head
+        printf("Element %d deleted.\n", key);
+        return;
+    }
+
+    // Case 2: Search for key while keeping track of previous node
+    while (temp != NULL && temp->data != key) {
+        prev = temp;
+        temp = temp->next;
+    }
+
+    // Key not found in the list
+    if (temp == NULL) {
+        printf("Element %d not found in the list.\n", key);
+        return;
+    }
+
+    // Unlink the node from linked list and free memory
+    prev->next = temp->next;
+    free(temp);
+    printf("Element %d deleted.\n", key);
+}
+
+// Function to search for an element in the list
+void search(struct Node* head, int key) {
+    struct Node* temp = head;
+    int position = 1;
+
+    while (temp != NULL) {
+        if (temp->data == key) {
+            printf("Success! Number %d found at node position %d.\n", key, position);
+            return;
+        }
+        temp = temp->next;
+        position++;
+    }
+
+    printf("Element %d not found in the list.\n", key);
+}
