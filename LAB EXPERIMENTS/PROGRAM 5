@@ -1,0 +1,28 @@
+#include <stdio.h>
+
+// Recursive function to calculate factorial
+unsigned long long multiplyNumbers(int n) {
+    if (n >= 1) {
+        return n * multiplyNumbers(n - 1); // Recursive call
+    } else {
+        return 1; // Base case: 0! = 1
+    }
+}
+
+int main() {
+    int n;
+
+    // Get input from user
+    printf("Enter a non-negative integer: ");
+    scanf("%d", &n);
+
+    // Factorial is not defined for negative numbers
+    if (n < 0) {
+        printf("Error! Factorial of a negative number doesn't exist.\n");
+    } else {
+        // Call recursive function and print result
+        printf("Factorial of %d = %llu\n", n, multiplyNumbers(n));
+    }
+
+    return 0;
+}
