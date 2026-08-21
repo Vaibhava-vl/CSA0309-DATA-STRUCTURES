@@ -1,0 +1,251 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node
+{
+    int key;
+    struct Node *left;
+    struct Node *right;
+    int height;
+};
+
+int height(struct Node *n)
+{
+    if (n == NULL)
+        return 0;
+    return n->height;
+}
+
+int max(int a, int b)
+{
+    return (a > b) ? a : b;
+}
+
+struct Node* createNode(int key)
+{
+    struct Node* node = (struct Node*)malloc(sizeof(struct Node));
+
+    node->key = key;
+    node->left = NULL;
+    node->right = NULL;
+    node->height = 1;
+
+    return node;
+}
+
+void updateHeight(struct Node *n)
+{
+    n->height = 1 + max(height(n->left), height(n->right));
+}
+
+int getBalance(struct Node *n)
+{
+    if (n == NULL)
+        return 0;
+
+    return height(n->left) - height(n->right);
+}
+
+struct Node* rightRotate(struct Node *y)
+{
+    struct Node *x = y->left;
+    struct Node *t = x->right;
+
+    x->right = y;
+    y->left = t;
+
+    updateHeight(y);
+    updateHeight(x);
+
+    return x;
+}
+
+struct Node* leftRotate(struct Node *x)
+{
+    struct Node *y = x->right;
+    struct Node *t = y->left;
+
+    y->left = x;
+    x->right = t;
+
+    updateHeight(x);
+    updateHeight(y);
+
+    return y;
+}
+
+struct Node* insert(struct Node *root, int key)
+{
+    if (root == NULL)
+        return createNode(key);
+
+    if (key < root->key)
+        root->left = insert(root->left, key);
+    else if (key > root->key)
+        root->right = insert(root->right, key);
+    else
+        return root;
+
+    updateHeight(root);
+
+    int balance = getBalance(root);
+
+    if (balance > 1 && key < root->left->key)
+        return rightRotate(root);
+
+    if (balance < -1 && key > root->right->key)
+        return leftRotate(root);
+
+    if (balance > 1 && key > root->left->key)
+    {
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    if (balance < -1 && key < root->right->key)
+    {
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
+}
+
+struct Node* minValueNode(struct Node *node)
+{
+    struct Node *current = node;
+
+    while (current->left != NULL)
+        current = current->left;
+
+    return current;
+}
+
+struct Node* deleteNode(struct Node *root, int key)
+{
+    if (root == NULL)
+        return root;
+
+    if (key < root->key)
+        root->left = deleteNode(root->left, key);
+
+    else if (key > root->key)
+        root->right = deleteNode(root->right, key);
+
+    else
+    {
+        if (root->left == NULL || root->right == NULL)
+        {
+            struct Node *temp;
+
+            if (root->left != NULL)
+                temp = root->left;
+            else
+                temp = root->right;
+
+            if (temp == NULL)
+            {
+                temp = root;
+                root = NULL;
+            }
+            else
+            {
+                *root = *temp;
+            }
+
+            free(temp);
+        }
+        else
+        {
+            struct Node *temp = minValueNode(root->right);
+
+            root->key = temp->key;
+            root->right = deleteNode(root->right, temp->key);
+        }
+    }
+
+    if (root == NULL)
+        return root;
+
+    updateHeight(root);
+
+    int balance = getBalance(root);
+
+    if (balance > 1 && getBalance(root->left) >= 0)
+        return rightRotate(root);
+
+    if (balance > 1 && getBalance(root->left) < 0)
+    {
+        root->left = leftRotate(root->left);
+        return rightRotate(root);
+    }
+
+    if (balance < -1 && getBalance(root->right) <= 0)
+        return leftRotate(root);
+
+    if (balance < -1 && getBalance(root->right) > 0)
+    {
+        root->right = rightRotate(root->right);
+        return leftRotate(root);
+    }
+
+    return root;
+}
+
+void search(struct Node *root, int key)
+{
+    if (root == NULL)
+    {
+        printf("%d not found\n", key);
+        return;
+    }
+
+    if (root->key == key)
+    {
+        printf("%d found in AVL tree\n", key);
+        return;
+    }
+
+    if (key < root->key)
+        search(root->left, key);
+    else
+        search(root->right, key);
+}
+
+void inorder(struct Node *root)
+{
+    if (root != NULL)
+    {
+        inorder(root->left);
+        printf("%d ", root->key);
+        inorder(root->right);
+    }
+}
+
+int main()
+{
+    struct Node *root = NULL;
+
+    /* Insert elements */
+    root = insert(root, 30);
+    root = insert(root, 20);
+    root = insert(root, 40);
+    root = insert(root, 10);
+    root = insert(root, 25);
+    root = insert(root, 50);
+
+    printf("After insertion: ");
+    inorder(root);
+
+    /* Search element */
+    printf("\nSearch 25: ");
+    search(root, 25);
+
+    /* Delete element */
+    root = deleteNode(root, 20);
+
+    printf("After deleting 20: ");
+    inorder(root);
+
+    return 0;
+}
